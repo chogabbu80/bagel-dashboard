@@ -186,7 +186,7 @@ function render(){
   document.getElementById('chartTitle').textContent='시간대별 '+(M==='sales'?'매출':'주문 건수')+' (일평균)';
   document.getElementById('chartDesc').textContent='7시~17시'+(state.view==='all'?' 전체 흐름':' — '+defsLegend.map(d=>d.label).join(' vs '));
   document.getElementById('legend').innerHTML=defsLegend.map(d=>'<span><i class="dot" style="background:'+COLORS[d.key]+'"></i>'+d.label+'</span>').join('');
-  document.getElementById('note').textContent='* 일평균 = 기간 합계 / 영업일수(화요일 휴무 제외). 매출은 순수 메뉴 매출(배달팁·할인 별도). 에그류=샌드위치, 또우장·아샷추=음료.';
+  document.getElementById('note').textContent='* 일평균 = 기간 합계 / 영업일수(화요일 휴무 제외). 매출은 순수 메뉴 매출(배달팁·할인 별도).';
   const cfg={type:isLine?'line':'bar',data:{labels:HOURS.map(h=>h+'시'),datasets},
     options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtFull(c.raw)}}},
     scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{callback:v=>fmtVal(v),font:{size:11}},grid:{color:'#EEF2F7'}}}}};
