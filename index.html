@@ -104,7 +104,7 @@ select{border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size
     <h1>🥯 마더린러 베이글 · 통합 분석 대시보드</h1>
     <p>해운대점 · 시간대·기간·채널·메뉴를 한 화면에서 · 화요일 정기휴무 제외 · 일평균 기준</p>
     <span class="period-badge" id="periodBadge">—</span>
-    <span class="period-badge" style="background:rgba(200,133,59,.22);border-color:rgba(200,133,59,.4)">🔄 생성 2026-09-10 21:33</span>
+    <span class="period-badge" style="background:rgba(200,133,59,.22);border-color:rgba(200,133,59,.4)">🔄 생성 2026-09-10 21:44</span>
     <button class="refresh-btn" onclick="hardRefresh()" title="최신 데이터로 강제 새로고침">🔄 새로고침</button>
   </div>
   <div class="panel">
@@ -377,15 +377,20 @@ function renderWeather(dset){
         '<div class="sub">일 '+(days?(o/days).toFixed(1):0)+'건 · 객단가 '+won(aov)+'</div>'+
         '<div class="sub">'+days+'일 · 배달 '+(s?Math.round(dv/s*100):0)+'% · 평균'+(zT[z]?zT[z].toFixed(0):'-')+'°</div></div>';});
   document.getElementById('weatherZone').innerHTML=h2||'<div class="sub">이 기간 데이터 없음</div>';
-  // ③ 요일 × 날씨: 일평균 주문건수 (매출 대신 주문건수로 — 요청)
+  // ③ 요일 × 날씨: 일평균 매출(메인) + 주문건수(괄호). 색 농도는 매출 기준.
   const WD=['월','화','수','목','금','토','일'],WC=['맑음','흐림','비','눈'];
-  const cO={},cd={};
+  const cS={},cO={},cd={};
   EX.forEach(r=>{const w=byDate[r.date];if(!w)return;const dd=new Date(r.date+'T00:00').getDay();const wd=(dd+6)%7;const k=wd+'_'+w.cat;
-    cO[k]=(cO[k]||0)+r.orders;(cd[k]=cd[k]||new Set()).add(r.date);});
-  const av={};let pk=0;for(let d=0;d<7;d++)WC.forEach(c=>{const k=d+'_'+c;if(cd[k]){const v=cO[k]/cd[k].size;av[k]=v;if(v>pk)pk=v;}});
-  document.getElementById('wxCrossHead').innerHTML='<tr><th>일평균주문</th>'+WC.map(c=>'<th>'+c+'</th>').join('')+'</tr>';
-  let hb='';for(let d=0;d<7;d++){if(!WC.some(c=>av[d+'_'+c]!=null))continue;
-    hb+='<tr><td class="wd">'+WD[d]+'</td>'+WC.map(c=>{const v=av[d+'_'+c];return '<td class="cell" style="background:'+heatColor(pk&&v?v/pk:0)+'">'+(v!=null?v.toFixed(1):'')+'</td>';}).join('')+'</tr>';}
+    cS[k]=(cS[k]||0)+r.sales;cO[k]=(cO[k]||0)+r.orders;(cd[k]=cd[k]||new Set()).add(r.date);});
+  const aS={},aO={};let pk=0;
+  for(let d=0;d<7;d++)WC.forEach(c=>{const k=d+'_'+c;if(cd[k]){const days=cd[k].size;
+    aS[k]=cS[k]/days;aO[k]=cO[k]/days;if(aS[k]>pk)pk=aS[k];}});
+  document.getElementById('wxCrossHead').innerHTML='<tr><th>일평균매출<br><span style="font-weight:400;font-size:10px;color:#8a7f6f">(건수)</span></th>'+WC.map(c=>'<th>'+c+'</th>').join('')+'</tr>';
+  let hb='';for(let d=0;d<7;d++){if(!WC.some(c=>aS[d+'_'+c]!=null))continue;
+    hb+='<tr><td class="wd">'+WD[d]+'</td>'+WC.map(c=>{const s=aS[d+'_'+c];
+      if(s==null)return '<td class="cell" style="background:'+heatColor(0)+'"></td>';
+      const o=aO[d+'_'+c];
+      return '<td class="cell" style="background:'+heatColor(pk?s/pk:0)+'"><b>'+won(Math.round(s))+'</b><br><span style="font-size:10px;color:#6b6355">('+o.toFixed(1)+'건)</span></td>';}).join('')+'</tr>';}
   document.getElementById('wxCrossBody').innerHTML=hb;
 }
 function hardRefresh(){
